@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.halen.data.mapper.GoodsMapper">
+	<resultMap id="goodsMap" type="Goods">
+		<id property="id" column="g_id"/>
+		<result property="tao_id" column="g_tao_id"/>
+		<result property="hid" column="g_hid"/>
+		<result property="title" column="g_title"/>
+		<result property="url" column="g_url"/>
+		<result property="weight" column="g_weight"/>
+		<result property="price" column="g_price"/>
+        <result property="purchase_price" column="g_purchase_price"/>
+		<result property="template" column="g_template"/>
+		<result property="status" column="g_status"/>
+		<result property="discount" column="g_discount"/>
+		<result property="modified" column="g_modified"/>
+		<result property="created" column="g_created"/>
+		<collection property="skuList" ofType="MySku" >
+	      	<id property="id" column="s_id"/>
+	      	<result property="tao_id" column="s_tao_id"/>
+	      	<result property="goods_id" column="s_goods_id"/>
+            <result property="color_id" column="s_color_id"/>
+	      	<result property="color" column="s_color"/>
+	      	<result property="size" column="s_size"/>
+	      	<result property="price" column="s_price"/>
+	      	<result property="quantity" column="s_quantity"/>
+            <result property="lock_quantity" column="s_lock_quantity"/>
+            <result property="manaual_lock_quantity" column="s_manaual_lock_quantity"/>
+	      	<result property="modified" column="s_modified"/>
+	      	<result property="created" column="s_created"/>
+	    </collection>
+	</resultMap>
+	<sql id="insertColumns">tao_id, hid, title, url, weight, price, purchase_price, template, status, discount, created</sql>
+	<sql id="selectColumns">g.id as g_id, g.tao_id as g_tao_id, g.hid as g_hid, g.title as g_title, g.url as g_url, g.weight as g_weight,
+							g.price as g_price, g.purchase_price as g_purchase_price, g.template as g_template, g.status as g_status,
+							 g.discount as g_discount, g.modified as g_modified, g.created as g_created</sql>
+	<sql id="selectColumnsSku">s.id as s_id, s.tao_id as s_tao_id, s.goods_id as s_goods_id, s.color_id as s_color_id, s.color as s_color, s.size as s_size,
+							s.price as s_price, s.quantity as s_quantity, s.lock_quantity as s_lock_quantity,
+                            manaual_lock_quantity as s_manaual_lock_quantity, s.modified as s_modified,
+                            s.created as s_created</sql>
+	
+	<select id="list" resultType="Goods">
+		select * from Goods 
+	</select>
+	
+	<select id="listGoodsDetail" parameterType="java.util.Map" resultMap="goodsMap">
+		select <include refid="selectColumns"/>, <include refid="selectColumnsSku"/> 
+			from (select * from goods 
+			<where>
+   				<if test="goods_id != null">
+   					hid like CONCAT('%', #{goods_id}, '%')
+   				</if>
+   			</where>
+			limit #{start}, #{page_size}) g 
+			left join sku s on g.hid = s.goods_id 
+			order by g.hid 
+	</select>
+
+    <select id="listAllGoodsDetail" resultMap="goodsMap">
+        select <include refid="selectColumns"/>, <include refid="selectColumnsSku"/>
+        from goods g
+        left join sku s on g.hid = s.goods_id
+        order by g.hid
+    </select>
+
+	<select id="goodsCountPaging" parameterType="java.util.Map" resultType="int">
+		select count(*) from goods
+			<where>
+				<if test="goods_id != null">
+					hid like CONCAT('%', #{goods_id}, '%')
+				</if>
+			</where>
+	</select>   		
+	
+	<insert id="insert" parameterType="Goods" >
+	  	insert into goods(<include refid="insertColumns"/>) values(#{tao_id}, #{hid}, #{title}, #{url}, #{weight}, 
+	  		#{price}, #{purchase_price}, #{template}, #{status}, #{discount}, now())
+	</insert>
+	
+	<insert id="batchInsert" parameterType="java.util.List">
+		insert into goods (<include refid="insertColumns"/>) values
+		<foreach collection="list" item="goods" index="index"  
+            separator=",">  
+            (#{goods.tao_id}, #{goods.hid}, #{goods.title}, #{goods.url}, #{goods.weight}, #{goods.price},
+                #{goods.purchase_price}, #{goods.template},
+            		#{goods.status}, #{goods.discount}, now())
+        </foreach> 
+	</insert>
+	
+	<update id="update" parameterType="Goods">
+		update goods set tao_id=#{tao_id}, hid=#{hid}, title=#{title}, url=#{url}, weight=#{weight}, 
+			price=#{price}, purchase_price=#{purchase_price}, template=#{template}, status=#{status},
+            discount=#{discount} where id=#{id}
+	</update>
+	
+	<update id="updatePicUrl" parameterType="Map">
+		update goods set url=#{pic_url} where hid=#{hid}
+	</update>
+	
+	<select id="getById" parameterType="int" resultMap="goodsMap" >
+		select <include refid="selectColumns"/>, <include refid="selectColumnsSku"/> from goods g left join sku s on g.hid = s.goods_id where g.id=#{id}
+	</select>
+	
+	<select id="selectById" parameterType="java.util.List" resultMap="goodsMap" >
+		select <include refid="selectColumns"/>, <include refid="selectColumnsSku"/> from goods g left join sku s on g.hid = s.goods_id where g.hid 
+		<if test="list.size()==1">
+			= #{list[0]}
+		</if>
+		<if test="list.size()>1">			
+			in
+			<foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+	</select>
+	
+	<select id="getByHid" parameterType="String" resultType="Goods" >
+		select * from goods where hid = #{hid}
+	</select>
+	
+	<insert id="updateTemplate" parameterType="java.util.Map">
+		update goods set template=#{template} where hid in
+		<foreach item="hid" index="index" collection="hidList" open="(" separator="," close=")">
+            #{hid}
+        </foreach> 
+	</insert>
+
+</mapper>

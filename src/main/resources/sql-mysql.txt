@@ -1,0 +1,246 @@
+drop table if exists logistics_company;
+create table logistics_company (
+	id bigint,
+	code varchar(50) unique,
+	name varchar(50),
+	reg_mail_no varchar(255),
+	status int,
+	modified timestamp,
+	created timestamp
+) DEFAULT CHARACTER SET utf8;
+
+drop table if exists item_prop;
+create table item_prop (
+	id int primary key auto_increment,
+	pid bigint,
+	name varchar(50),
+	modified timestamp,
+	created timestamp,
+	unique key(pid, name)
+) DEFAULT CHARACTER SET utf8;
+
+drop table if exists prop_value;
+create table prop_value (
+	id int primary key auto_increment,
+	vid bigint,
+	name varchar(50),
+	pid bigint,
+	modified timestamp,
+	created timestamp,
+	unique key(vid, name, pid)
+) DEFAULT CHARACTER SET utf8;
+
+drop table if exists goods;
+create table goods (
+	id bigint primary key auto_increment, 
+	tao_id bigint,
+	hid varchar(100) not null unique,
+	title varchar(255), 
+	url varchar(255),
+	weight int unsigned,
+	price int unsigned, #吊牌价
+    purchase_price int unsigned, #采购价
+	status int,
+	template varchar(50),
+	discount decimal(3, 2) default 0.00,
+	modified timestamp,
+	created timestamp
+) DEFAULT CHARACTER SET utf8;
+
+drop table if exists sku;
+create table sku (
+	id bigint primary key auto_increment,
+	tao_id bigint unsigned,
+	color_id varchar(20), #颜色编号
+	goods_id varchar(100),
+	color varchar(20),
+	size varchar(20),
+	price int unsigned,
+	quantity int unsigned,  #实际库存
+	lock_quantity int unsigned, #锁定库存
+	manaual_lock_quantity int unsigned, #手动锁定库存
+	modified timestamp,
+	created timestamp,
+	unique key(goods_id, color, size)
+) DEFAULT CHARACTER SET utf8;
+
+drop table if exists area;
+create table area (
+	id bigint primary key,
+	name varchar(50),
+	parent_id bigint,
+	type bigint,
+	modified timestamp,
+	created timestamp
+	) DEFAULT CHARACTER SET utf8;
+
+drop table if exists refund;
+create table refund (
+	id bigint primary key auto_increment,
+	tid varchar(50),
+	oid varchar(50),
+	refund_reason varchar(255),
+	comment1 varchar(255),
+	comment2 varchar(255),
+	comment3 varchar(255),
+	comment4 varchar(255),
+	pic_url varchar(500),
+	status varchar(25),
+	seller_nick varchar(50),
+	name varchar(50),
+	modified timestamp,
+	created timestamp,
+	unique key(tid, oid)
+) DEFAULT CHARACTER SET utf8;
+
+drop table if exists trade;
+create table trade (
+	id bigint primary key auto_increment,
+	tid varchar(50) unique not null,
+	name varchar(50) not null, 
+	phone varchar(20), 
+	mobile varchar(20) not null,
+	area_id bigint,
+	state varchar(20),
+	city varchar(20),
+	district varchar(20),
+	address varchar(255) not null, 
+	postcode varchar(20), 
+	delivery varchar(20), #快递名称
+	delivery_number varchar(20), #快递单号
+	delivery_money int, #快递费用
+	template_id int, #模板id
+	total_weight int unsigned, 
+	goods_count bigint unsigned,
+	payment int unsigned, 
+	distributor_id int unsigned,
+	status varchar(50),
+	my_status tinyint,
+	seller_memo varchar(255),
+	buyer_message varchar(255),
+	seller_nick varchar(50),
+	come_from varchar(25),
+	operator varchar(50), #最后的操作人，TODO
+	pay_type tinyint, #支付方式（1，货到付款  4，在线支付）
+    return_order tinyint default 0, #是否换货订单（1，是  0， 否）
+	modified timestamp default current_timestamp,
+	created timestamp
+) DEFAULT CHARACTER SET utf8;
+
+drop table if exists order1;
+create table order1
+(
+	id bigint primary key auto_increment, 
+	tid varchar(50) not null, 
+	oid varchar(50),
+	goods_id varchar(100),
+	title varchar(255),
+	pic_path varchar(255),
+	sku_id bigint unsigned not null, 
+	quantity bigint unsigned,
+	price int unsigned,
+	discount decimal(3,2), 
+	weight int unsigned default 0,
+	payment int unsigned,
+	delivery varchar(50),
+	delivery_number varchar(50),
+	status varchar(50),
+	modified timestamp,
+	created timestamp
+) DEFAULT CHARACTER SET utf8;
+
+drop table if exists user1;
+create table user1 (
+	id int primary key auto_increment,
+	username varchar(100) unique not null,
+	password varchar(100) not null,
+	enabled tinyint, 
+	type varchar(25),
+	modified timestamp,
+	created timestamp,
+	shop_id int
+) DEFAULT CHARACTER SET utf8;
+insert into user1 values(null, 'superadmin', 'superadmin', 1, 'SuperAdmin', now(), now(), -1);
+insert into user1 values(null, 'admin', 'admin', 1, 'Admin', now(), now(), -1);
+
+drop table if exists user_authority;
+create table user_authority (
+	id int primary key auto_increment,
+	username varchar(100),
+	authority varchar(50),
+	modified timestamp,
+	created timestamp,
+	unique key(username, authority)
+) DEFAULT CHARACTER SET utf8;
+insert into user_authority values(null, 'superadmin', 'manager_system', now(), now());
+insert into user_authority values(null, 'superadmin', 'manager_system_action', now(), now());
+insert into user_authority values(null, 'superadmin', 'logined', now(), now());
+insert into user_authority values(null, 'admin', 'manager_system', now(), now());
+insert into user_authority values(null, 'admin', 'manager_system_action', now(), now());
+insert into user_authority values(null, 'admin', 'logined', now(), now());
+
+drop table if exists distributor;
+create table distributor (
+	id int primary key auto_increment,
+	name varchar(100) unique not null,
+	phone varchar(20),
+	deposit bigint unsigned not null default 0, 
+	discount decimal(3, 2), 
+	self tinyint,
+	nocheck tinyint,
+	modified timestamp,
+	created timestamp
+) DEFAULT CHARACTER SET utf8;
+
+drop table if exists shop;
+create table shop (
+	id int primary key auto_increment,
+	seller_nick varchar(100) not null,
+	token varchar(255),
+	refresh_token varchar(255),
+	modified timestamp,
+	created timestamp,
+	last_refresh timestamp,
+	auto_sync tinyint,
+	type varchar(20),
+	distributor_id int,
+	auto_sync_store tinyint,
+	rate decimal(3, 2) default 1.00
+) DEFAULT CHARACTER SET utf8;
+
+drop table if exists template;
+create table template (
+	id int primary key auto_increment,
+	name varchar(50) not null,
+	logistics_type varchar(25),
+	area varchar(50),
+	start_standard int default 0,
+	start_fee int default 0,
+	add_standard int default 0,
+	add_fee int default 0,
+	modified timestamp,
+	created timestamp,
+	unique key(name, logistics_type, area)
+) DEFAULT CHARACTER SET utf8;
+
+drop table if exists template_name;
+create table template_name (
+	id int primary key auto_increment,
+	name varchar(50) not null,
+	modified timestamp,
+	created timestamp,
+	unique key(name)
+) DEFAULT CHARACTER SET utf8;
+
+drop table if exists seller_info;
+create table seller_info (
+	id int primary key auto_increment,
+	sender varchar(255),
+	from_state varchar(255),
+	from_company varchar(255),
+	from_address varchar(255),
+	mobile varchar(20),
+	modified timestamp,
+	created timestamp
+)  DEFAULT CHARACTER SET utf8;
+insert into seller_info values(null, '毛小毛', '你好', '三千五百爸爸表示', '三千五百爸爸表示.....', '110', null, now());	

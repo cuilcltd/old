@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.halen.data.mapper.AdminMapper">
+
+	<sql id="userColumns">u.id as u_id, u.username as u_username, u.password as u_password, u.enabled as u_enabled,
+			u.type as u_type, u.modified as u_modified, u.created as u_created, u.shop_id as u_shop_id,
+			ua.id as ua_id, ua.username as ua_username, ua.authority as ua_authority, ua.modified as ua_modified,
+			ua.created as ua_created,
+			s.id as s_id, s.seller_nick as s_seller_nick, s.token as s_token, s.refresh_token as s_refresh_token,
+			s.modified as s_modified, s.created as s_created, s.last_refresh as s_last_refresh, s.auto_sync as s_auto_sync,
+			s.type as s_type, s.distributor_id as s_distributor_id, s.auto_sync_store as s_auto_sync_store, s.rate as s_rate,
+			d.id as d_id, d.name as d_name, d.phone as d_phone, d.deposit as d_deposit, d.discount as d_discount, d.self as d_self,
+			d.nocheck as d_nocheck, d.modified as d_modified, d.created as d_created</sql>
+			
+	<sql id="distributorColumns">
+			d.id as d_id, d.name as d_name, d.phone as d_phone, d.deposit as d_deposit, d.discount as d_discount, d.self as d_self,
+			d.nocheck as d_nocheck, d.modified as d_modified, d.created as d_created,
+			s.id as s_id, s.seller_nick as s_seller_nick, s.token as s_token, s.refresh_token as s_refresh_token,
+			s.modified as s_modified, s.created as s_created, s.last_refresh as s_last_refresh, s.auto_sync as s_auto_sync,
+			s.type as s_type, s.distributor_id as s_distributor_id, s.auto_sync_store as s_auto_sync_store, s.rate as s_rate,
+			u.id as u_id, u.username as u_username, u.password as u_password, u.enabled as u_enabled,
+			u.type as u_type, u.modified as u_modified, u.created as u_created, u.shop_id as u_shop_id</sql>
+			
+	<sql id="shopColumns">
+			s.id as s_id, s.seller_nick as s_seller_nick, s.token as s_token, s.refresh_token as s_refresh_token,
+			s.modified as s_modified, s.created as s_created, s.last_refresh as s_last_refresh, s.auto_sync as s_auto_sync,
+			s.type as s_type, s.distributor_id as s_distributor_id, s.auto_sync_store as s_auto_sync_store, s.rate as s_rate,
+			d.id as d_id, d.name as d_name, d.phone as d_phone, d.deposit as d_deposit, d.discount as d_discount, d.self as d_self,
+			d.nocheck as d_nocheck, d.modified as d_modified, d.created as d_created</sql>
+	
+	<resultMap id="userMap" type="User">
+		<id property="id" column="u_id"/>
+		<result property="username" column="u_username"/>
+		<result property="password" column="u_password"/>
+		<result property="enabled" column="u_enabled"/>
+		<result property="type" column="u_type"/>
+		<result property="modified" column="u_modified"/>
+		<result property="created" column="u_created"/>
+	    <association property="shop" javaType="Shop">
+		    <id property="id" column="s_id"/>
+		    <result property="sellerNick" column="s_seller_nick"/>
+		    <result property="token" column="s_token"/>
+		    <result property="refreshToken" column="s_refresh_token"/>
+		    <result property="modified" column="s_modified"/>
+		    <result property="created" column="s_created"/>
+		    <result property="lastRefresh" column="s_last_refresh"/>
+		    <result property="autoSync" column="s_auto_sync"/>
+		    <result property="autoSyncStore" column="s_auto_sync_store"/>
+		    <result property="type" column="s_type"/>
+            <result property="rate" column="s_rate"/>
+		    <association property="d" javaType="Distributor">
+			    <id property="id" column="d_id"/>
+			    <result property="name" column="d_name"/>
+			    <result property="phone" column="d_phone"/>
+			    <result property="deposit" column="d_deposit"/>
+			    <result property="discount" column="d_discount"/>
+			    <result property="self" column="d_self"/>
+			    <result property="noCheck" column="d_nocheck"/>
+			    <result property="modified" column="d_modified"/>
+			    <result property="created" column="d_created"/>
+			</association>
+		</association>
+		<collection property="authorities" ofType="UserAuthority" >
+	      	<id property="id" column="ua_id"/>
+		    <result property="username" column="ua_username"/>
+		    <result property="authority" column="ua_authority"/>
+		    <result property="modified" column="ua_modified"/>
+		    <result property="created" column="ua_created"/>
+	    </collection>
+	</resultMap>
+	
+	<resultMap id="distributorMap" type="Distributor">
+		<id property="id" column="d_id"/>
+	    <result property="name" column="d_name"/>
+	    <result property="phone" column="d_phone"/>
+	    <result property="deposit" column="d_deposit"/>
+	    <result property="discount" column="d_discount"/>
+	    <result property="self" column="d_self"/>
+	    <result property="noCheck" column="d_nocheck"/>
+	    <result property="modified" column="d_modified"/>
+	    <result property="created" column="d_created"/>
+	    <collection property="shopList" ofType="Shop" >
+	      	<id property="id" column="s_id"/>
+		    <result property="sellerNick" column="s_seller_nick"/>
+		    <result property="token" column="s_token"/>
+		    <result property="refreshToken" column="s_refresh_token"/>
+		    <result property="modified" column="s_modified"/>
+		    <result property="created" column="s_created"/>
+		    <result property="lastRefresh" column="s_last_refresh"/>
+		    <result property="autoSync" column="s_auto_sync"/>
+		     <result property="autoSyncStore" column="s_auto_sync_store"/>
+		    <result property="type" column="s_type"/>
+            <result property="rate" column="s_rate"/>
+		    <collection property="userList" ofType="User" >
+		      	<id property="id" column="u_id"/>
+				<result property="username" column="u_username"/>
+				<result property="password" column="u_password"/>
+				<result property="enabled" column="u_enabled"/>
+				<result property="type" column="u_type"/>
+				<result property="modified" column="u_modified"/>
+				<result property="created" column="u_created"/>
+		    </collection>
+	    </collection>
+	</resultMap>
+	
+	<resultMap id="shopMap" type="Shop">
+	    <id property="id" column="s_id"/>
+	    <result property="sellerNick" column="s_seller_nick"/>
+	    <result property="token" column="s_token"/>
+	    <result property="refreshToken" column="s_refresh_token"/>
+	    <result property="modified" column="s_modified"/>
+	    <result property="created" column="s_created"/>
+	    <result property="lastRefresh" column="s_last_refresh"/>
+	    <result property="autoSync" column="s_auto_sync"/>
+	    <result property="autoSyncStore" column="s_auto_sync_store"/>
+	    <result property="type" column="s_type"/>
+        <result property="rate" column="s_rate"/>
+	    <association property="d" javaType="Distributor">
+		    <id property="id" column="d_id"/>
+		    <result property="name" column="d_name"/>
+		    <result property="phone" column="d_phone"/>
+		    <result property="deposit" column="d_deposit"/>
+		    <result property="discount" column="d_discount"/>
+		    <result property="self" column="d_self"/>
+		    <result property="noCheck" column="d_nocheck"/>
+		    <result property="modified" column="d_modified"/>
+		    <result property="created" column="d_created"/>
+		</association>
+	</resultMap>
+	
+	<select id="listUser" parameterType="java.util.Map" resultMap="userMap">
+		select <include refid="userColumns"/>
+		from 
+		<choose>
+	   		<when test="type != null or enabled != null">
+	   			(select * from user1 
+	   			<where>
+	   				<if test="type != null">
+	   					type = #{type}
+	   				</if>
+	   				<if test="enabled != null">
+	   					and enabled=#{enabled}
+	   				</if>
+	   			</where>
+	   			) as u
+	   		</when>
+	   		<otherwise>
+	   			user1 as u
+	   		</otherwise>
+	   </choose>
+						left join user_authority as ua on u.username = ua.username
+						left join shop as s on u.shop_id = s.id
+						left join distributor as d on s.distributor_id = d.id
+		order by u.username			 
+	</select>
+	
+	<select id="selectDistributorMap" parameterType="Map" resultMap="distributorMap">
+		select <include refid="distributorColumns"/>
+		from
+		<choose>
+	   		<when test="id != null">
+	   			(select * from distributor 
+	   			<where>
+	   				<if test="id != null">
+	   					id = #{id}
+	   				</if>
+	   			</where>
+	   			) as d
+	   		</when>
+	   		<otherwise>
+	   			distributor as d
+	   		</otherwise>
+	   </choose>
+		left join shop as s on d.id = s.distributor_id
+		left join user1 as u on s.id = u.shop_id
+	</select>
+	
+	<select id="selectDistributor" parameterType="Map" resultType="Distributor">
+		select * from distributor
+		<where>
+			<if test="id != null">
+				id = #{id}
+			</if>
+			<if test="name != null">
+				name = #{name}
+			</if>
+		</where> 
+	</select>
+	
+	<update id="updateDistributorCheck" parameterType="Map">
+		update distributor set nocheck=#{v} where id=#{id}
+	</update>
+	
+	<update id="updateShopSyncStore" parameterType="Map">
+		update shop set auto_sync_store=#{v} where id=#{id}
+	</update>
+	
+	<update id="updateDistributorDiscount" parameterType="Map">
+		update distributor set discount=#{v} where id=#{id}
+	</update>
+	
+	<select id="selectUserByUsername" resultType="User">
+		select * from user1 where username = #{username}
+	</select>
+	
+	<insert id="insertUser" parameterType="User">
+		insert into user1(username, password, enabled, type, created, shop_id) values(#{username},
+		#{password}, 1, #{type}, now(), #{shopId})
+	</insert>
+	
+	<insert id="insertDistributor" parameterType="Distributor">
+		insert into distributor(name, phone, discount, self, nocheck, created) values(#{name},
+		#{phone}, #{discount}, #{self}, #{noCheck}, now())
+	</insert>
+	
+	<update id="updateUserEnabled" parameterType="java.util.Map">
+		update user1 set enabled = #{enabled} where username = #{username}
+	</update>
+	
+	<update id="updateUserPassword" parameterType="java.util.Map">
+		update user1 set password = #{password} where username = #{username}
+	</update>
+	
+	<select id="selectUser" parameterType="String" resultMap="userMap">
+		select <include refid="userColumns"/>
+		from user1 as u left join user_authority as ua on u.username = ua.username
+						left join shop as s on u.shop_id = s.id
+						left join distributor as d on s.distributor_id = d.id
+		where u.username = #{username}
+	</select>
+	
+	<select id="selectShop" parameterType="Map" resultType="Shop">
+		select id, seller_nick as sellerNick, token, refresh_token as refreshToken,
+		modified, created, last_refresh as lastRefresh, auto_sync as autoSync, type, distributor_id as dId,
+		auto_sync_store as autoSyncStore, rate from shop
+		<where>
+			<if test="autoSync != null">
+				auto_sync = #{autoSync}
+			</if>
+			<if test="autoSyncStore != null">
+				and auto_sync_store = #{autoSyncStore}
+			</if>
+			<if test="type != null">
+				and type=#{type}
+			</if>
+			<if test="sellerNick != null">
+				and seller_nick=#{sellerNick}
+			</if>
+		</where> 
+	</select>
+	
+	<insert id="insertShop" parameterType="Shop">
+		insert into shop values(null, #{sellerNick}, #{token}, #{refreshToken}, null, now(), now(), #{autoSync},
+		#{type}, #{dId}, #{autoSyncStore}, #{rate})
+	</insert>
+
+    <update id="updateShopToken" parameterType="java.util.Map">
+        update shop set token=#{token}, auto_sync=1 where seller_nick=#{sellerNick}
+    </update>
+	
+	<select id="selectShopMap" parameterType="String" resultMap="shopMap">
+		select <include refid="shopColumns"/>
+		from (select * from shop where seller_nick = #{sellerNick}) as s
+		join distributor as d on s.distributor_id = d.id
+	</select>
+	
+	<update id="updateDeposit" parameterType="java.util.Map">
+		update distributor set deposit = #{deposit} where id = #{id}
+	</update>
+
+	<insert id="batchInsertAuthority" parameterType="java.util.List">
+		insert into user_authority (username, authority, created) values
+		<foreach collection="list" item="item" index="index"  
+            separator=",">  
+            (#{item.username}, #{item.authority}, now())
+        </foreach> 
+	</insert>
+	
+	<insert id="batchInsertTemplate" parameterType="java.util.List">
+		insert into template (name, logistics_type, area, start_standard, start_fee, add_standard, add_fee, created) values
+		<foreach collection="list" item="item" index="index"  
+            separator=",">  
+            (#{item.name}, #{item.logistics_type}, #{item.area}, #{item.start_standard}, #{item.start_fee}, #{item.add_standard}, 
+            #{item.add_fee}, now())
+        </foreach> 
+	</insert>
+	
+	<select id="selectTemplateAll" resultType="Template">
+		select * from template;
+	</select>
+	
+	<select id="selectTemplateByName" parameterType="String" resultType="Template">
+		select * from template where name = #{name};
+	</select>
+	
+	<insert id="insertTemplateName" parameterType="String">
+		insert into template_name(name, created) values(#{name}, now());
+	</insert>
+	
+	<select id="selectTemplateNameByName" parameterType="String" resultType="String">
+		select name from template_name where name=#{name}
+	</select>
+	
+	<select id="selectTemplateNameAll" parameterType="String" resultType="String">
+		select name from template_name order by created asc
+	</select>
+	
+	<select id="selectTemplate" parameterType="java.util.Map" resultType="Template">
+		select * from template where name = #{name} and logistics_type = #{logisticsType} and area = #{area}
+	</select>
+	
+	<update id="updateTemplate" parameterType="Template">
+		update template set start_standard = #{start_standard}, start_fee = #{start_fee}, add_standard = #{add_standard},
+			add_fee = #{add_fee} where name = #{name} and area = #{area} and logistics_type = #{logistics_type}
+	</update>
+	
+	<select id="selectSellerInfo" resultType="SellerInfo">
+		select * from seller_info
+	</select>
+	
+	<update id="updateSellerInfo" parameterType="SellerInfo">
+		update seller_info set sender=#{sender}, from_state=#{from_state}, from_company=#{from_company},
+		from_address=#{from_address}, mobile=#{mobile}
+	</update>
+
+    <update id="updateShopRate" parameterType="java.util.Map">
+        update shop set rate=#{v} where id=#{id}
+    </update>
+</mapper>
