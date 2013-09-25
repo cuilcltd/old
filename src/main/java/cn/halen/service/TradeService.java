@@ -351,7 +351,7 @@ public class TradeService {
 		if(updateSku) {
             //3
             skuService.unlockSku(list, false);
-        }
+        } //
 		for(MyOrder myOrder : list) {
 			myOrder.setStatus(Status.WAIT_BUYER_CONFIRM_GOODS.getValue());
 			myOrder.setDelivery(companyName);
