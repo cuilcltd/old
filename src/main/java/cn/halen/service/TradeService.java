@@ -348,6 +348,10 @@ public class TradeService {
 		myTradeMapper.updateMyTrade(myTrade);
 		
 		List<MyOrder> list = myTrade.getMyOrderList();
+		if(updateSku) {
+            //3
+            skuService.unlockSku(list, false);
+        }
 		for(MyOrder myOrder : list) {
 			myOrder.setStatus(Status.WAIT_BUYER_CONFIRM_GOODS.getValue());
 			myOrder.setDelivery(companyName);
@@ -358,10 +362,6 @@ public class TradeService {
                 skuService.updateSku(myOrder.getSku_id(), -myOrder.getQuantity(), 0, 0, false);
             }
 		}
-        if(updateSku) {
-            //3
-            skuService.unlockSku(list, false);
-        }
 	}
 	
 	public void updateOrder(MyOrder myOrder) {
